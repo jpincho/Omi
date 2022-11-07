@@ -1,15 +1,25 @@
-﻿# CMakeList.txt : CMake project for Omi, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.8)
 
 project ("Omi")
 
-# Add source to this project's executable.
-add_executable (Omi "Omi.cpp" "Omi.h")
+find_package(OpenGL REQUIRED)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET Omi PROPERTY CXX_STANDARD 20)
-endif()
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(glfw)
 
-# TODO: Add tests and install targets if needed.
+file ( GLOB_RECURSE GLAD_SOURCES "glad_core/*")
+add_library ( GLAD ${GLAD_SOURCES} )
+target_include_directories ( GLAD PUBLIC ${CMAKE_CURRENT_LIST_DIR}/glad_core/include )
+
+file ( GLOB LIBJSON_SOURCES "libjson/*.c" "libjson/*.h" )
+set ( LIBJSON_SOURCES "libjson/json.c" "libjson/json.h")
+
+file ( GLOB OMI_SOURCES "*.cpp" "*.hpp" )
+add_executable (Omi ${OMI_SOURCES} ${LIBJSON_SOURCES} )
+target_include_directories(Omi PRIVATE ${CMAKE_CURRENT_LIST_DIR}/glm )
+target_include_directories(Omi PRIVATE ${CMAKE_CURRENT_LIST_DIR}/glfw3/include )
+target_link_libraries(Omi glfw )
+target_link_libraries(Omi GLAD )
+target_link_libraries(Omi OpenGL::GL)
