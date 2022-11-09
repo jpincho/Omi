@@ -1,16 +1,17 @@
-#include "window_manager.hpp"
+#include "render_window.hpp"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-static GLFWwindow* window_handle = nullptr;
+static GLFWwindow *window_handle = nullptr;
+static unsigned general_vao;
 
-void GLFW_window_closed_callback(GLFWwindow* handle)
+void GLFW_window_closed_callback(GLFWwindow *handle)
 {
 	if (window_handle == handle)
 		window_handle = nullptr;
 }
 
-bool wm_initialize(void)
+bool render_window_initialize(void)
 {
 	if (glfwInit() != GLFW_TRUE)
 		return false;
@@ -34,27 +35,31 @@ bool wm_initialize(void)
 	gladLoadGL();
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f);
+	glGenVertexArrays(1, &general_vao);
+	glBindVertexArray(general_vao);
+	glViewport(0, 0, 1024, 768);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 	return true;
 }
 
-bool wm_shutdown(void)
+bool render_window_shutdown(void)
 {
 	glfwTerminate();
 	window_handle = nullptr;
 	return true;
 }
 
-bool wm_is_alive(void)
+bool render_window_is_alive(void)
 {
 	return (window_handle != nullptr);
 }
 
-void wm_new_frame(void)
+void render_window_new_frame(void)
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
 
-void wm_end_frame(void)
+void render_window_end_frame(void)
 {
 	glfwSwapBuffers(window_handle);
 	glfwPollEvents();
