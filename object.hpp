@@ -9,15 +9,14 @@ private:
 	std::vector <glm::vec2> points;
 	std::vector <uint16_t> indices;
 	GLuint vertex_buffer_glid, index_buffer_glid;
+	static GLuint shader_handle;
+	static GLint vertex_attribute_location, color_location;
+	glm::vec2 min, max;
 
 public:
-	glm::vec2 min, max;
 	object(void);
 	~object(void);
 	bool load_from_json_file(const char *filename);
-	GLuint get_vertex_buffer_glid(void) const;
-	GLuint get_index_buffer_glid(void) const;
-	unsigned get_vertex_count(void) const;
-	unsigned get_index_count(void) const;
 	void destroy(void);
+	void render(void);
 };

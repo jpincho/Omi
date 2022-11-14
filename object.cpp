@@ -1,8 +1,14 @@
 #include "object.hpp"
-#include <glad/glad.h>
-#include "libjson/json.h"
 #include "misc.hpp"
+#include "config.hpp"
+#include "libjson/json.h"
 #include "geompack.h"
+#include <glm/ext.hpp>
+#include <glad/glad.h>
+
+GLuint object::shader_handle = 0;
+GLint object::vertex_attribute_location = 0;
+GLint object::color_location = 0;
 
 object::object(void)
 {
@@ -113,6 +119,7 @@ bool object::load_from_json_file(const char *filename)
 			max.y = points[index].y;
 	}
 
+	// upload buffers to opengl
 	if (vertex_buffer_glid == 0)
 		glGenBuffers(1, &vertex_buffer_glid);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_glid);
@@ -123,27 +130,32 @@ bool object::load_from_json_file(const char *filename)
 	glBindBuffer(GL_ARRAY_BUFFER, index_buffer_glid);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(uint16_t) * indices.size(), indices.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// calculate matrix to be able to see the entire shape
+	glm::mat4 projection_matrix = glm::scale(glm::ortho((float)min.x, (float)max.x, (float)min.y, (float)max.y), glm::vec3(0.9f));
+
+	// load shader if necessary
+	if (shader_handle == 0)
+	{
+		shader_handle = create_shader(CURRENT_DIR "/shader1.vert",
+			nullptr,
+			CURRENT_DIR "/shader1.frag");
+		if (!shader_handle)
+			return false;
+		vertex_attribute_location = glGetAttribLocation(shader_handle, "a_Position");
+		color_location = glGetUniformLocation(shader_handle, "u_Color");
+	}
+	// setup opengl bindings
+	GLint proj_matrix_location = glGetUniformLocation(shader_handle, "u_ProjectionMatrix");
+
+	glUseProgram(shader_handle);
+	assert(check_opengl_error());
+	glEnableVertexAttribArray(vertex_attribute_location);
+	assert(check_opengl_error());
+	glUniformMatrix4fv(proj_matrix_location, 1, false, glm::value_ptr(projection_matrix));
+	assert(check_opengl_error());
+
 	return true;
-}
-
-GLuint object::get_vertex_buffer_glid(void) const
-{
-	return vertex_buffer_glid;
-}
-
-GLuint object::get_index_buffer_glid(void) const
-{
-	return index_buffer_glid;
-}
-
-unsigned object::get_vertex_count(void) const
-{
-	return (unsigned)points.size();
-}
-
-unsigned object::get_index_count(void) const
-{
-	return (unsigned)indices.size();
 }
 
 void object::destroy(void)
@@ -155,4 +167,27 @@ void object::destroy(void)
 	index_buffer_glid = vertex_buffer_glid = 0;
 	points.clear();
 	indices.clear();
+}
+
+void object::render(void)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_glid);
+	assert(check_opengl_error());
+	glVertexAttribPointer(vertex_attribute_location, 2, GL_FLOAT, false, 0, nullptr);
+	assert(check_opengl_error());
+	assert(check_opengl_error());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_glid);
+	assert(check_opengl_error());
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glUniform4f(color_location, 0.5f, 0.5f, 0.5f, 1.0f);
+	glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_SHORT, 0);
+	assert(check_opengl_error());
+
+	assert(check_opengl_error());
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glUniform4f(color_location, 0.0f, 0.0f, 1.0f, 1.0f);
+	glDrawElements(GL_LINE_LOOP, (GLsizei) indices.size(), GL_UNSIGNED_SHORT, 0);
+	assert(check_opengl_error());
+
 }
