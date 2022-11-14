@@ -11,6 +11,12 @@ void GLFW_window_closed_callback(GLFWwindow *handle)
 		window_handle = nullptr;
 }
 
+
+void GLFW_window_resized_callback(GLFWwindow *handle, int new_width, int new_height)
+{
+	glViewport(0, 0, new_width, new_height);
+}
+
 bool render_window_initialize(void)
 {
 	if (glfwInit() != GLFW_TRUE)
@@ -28,12 +34,12 @@ bool render_window_initialize(void)
 	glfwSetWindowPos(window_handle, 100, 100);
 
 	glfwSetWindowCloseCallback(window_handle, GLFW_window_closed_callback);
-
+	glfwSetWindowSizeCallback(window_handle, GLFW_window_resized_callback);
 	glfwMakeContextCurrent(window_handle);
 	glfwSwapInterval(1);
 
 	gladLoadGL();
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	//glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f);
 	glGenVertexArrays(1, &general_vao);
 	glBindVertexArray(general_vao);
@@ -65,3 +71,9 @@ void render_window_end_frame(void)
 	glfwPollEvents();
 }
 
+glm::uvec2 render_window_get_dimensions(void)
+{
+	int width, height;
+	glfwGetWindowSize(window_handle, &width, &height);
+	return glm::uvec2(width, height);
+}

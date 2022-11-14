@@ -16,7 +16,8 @@ target_include_directories ( GLAD PUBLIC ${CMAKE_CURRENT_LIST_DIR}/glad_core/inc
 file ( GLOB LIBJSON_SOURCES "libjson/*.c" "libjson/*.h" )
 set ( LIBJSON_SOURCES "libjson/json.c" "libjson/json.h")
 
-file ( GLOB OMI_SOURCES "*.cpp" "*.hpp" )
+configure_file(config.hpp.in ${CMAKE_CURRENT_LIST_DIR}/config.hpp)
+file ( GLOB OMI_SOURCES "object.cpp" "object.hpp" "render_Window.cpp" "render_window.hpp" "misc.cpp" "misc.hpp" "Omi.cpp" "geompack.c" "geompack.h" )
 add_executable (Omi ${OMI_SOURCES} ${LIBJSON_SOURCES} )
 target_include_directories(Omi PRIVATE ${CMAKE_CURRENT_LIST_DIR}/glm )
 target_include_directories(Omi PRIVATE ${CMAKE_CURRENT_LIST_DIR}/glfw3/include )

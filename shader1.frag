@@ -1,7 +1,7 @@
 #version 400
 out vec4 FragOutput;
-
+uniform vec4 u_Color;
 void main()
     {
-    FragOutput = vec4(1.0, 0.0, 0.0, 1.0);
+    FragOutput = u_Color;
     }
